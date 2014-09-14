@@ -125,4 +125,24 @@ public class GameBoard {
 	{
 		snake.move();
 	}
+	
+	private class Apple
+	{
+		Position position;
+		
+		public Apple(Position pos)
+		{
+			position = pos;
+		}
+		
+		public Position getPositon()
+		{
+			return position;
+		}
+		
+		public void setPosition(Position pos)
+		{
+			position = pos;
+		}
+	}
 }

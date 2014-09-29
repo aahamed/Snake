@@ -19,12 +19,15 @@ public class GameViewThread extends SurfaceView implements Runnable {
 	private SurfaceHolder holder;
 	volatile boolean running;
 	private WindowManager wm;
-	private int screenWidth;
-	private int screenHeight;
+	public static int screenWidth;
+	public static int screenHeight;
 	private GameBoard board;
 	//private Snake snake;
 	private final String TAG = "GameViewThread";
 	private boolean D = true;
+	private final int SCREEN_FPS = 60;
+	private final int TARGET_FPS = 4;
+	private boolean touchDown = false;
 	final Handler handler = new Handler();
 
 	public GameViewThread(Context context) {
@@ -46,27 +49,33 @@ public class GameViewThread extends SurfaceView implements Runnable {
 	public void renderCanvas(Canvas canvas)
 	{
 		//if(D) Log.d(TAG, "in renderCanvas()");
-		Paint paint = new Paint();
+		//Paint paint = new Paint();
 		canvas.drawColor(Color.DKGRAY);
-		board.drawGameBoard(canvas);
+		board.draw(canvas);
 	}
 	
 	int count = 0;
 	public void updateCanvas()
 	{
-		if(count % 60 == 0)
+		if(count % (SCREEN_FPS/TARGET_FPS) == 0)
 		{
 //			if(board.moveSnake() == false)
 //			{
 //				running = false;
 //				Log.d(TAG, "snake is out of bounds");
 //			}
-			board.moveSnake();
-			if(!board.snakeInBounds())
+			board.update();
+			touchDown = false;
+			if(board.gameOver())
 			{
 				running = false;
-				Log.d(TAG, "snake is out of bounds");
+				Log.d(TAG, "Game Over!");
 			}
+//			if(!board.snakeInBounds())
+//			{
+//				running = false;
+//				Log.d(TAG, "snake is out of bounds");
+//			}
 			count = 0;
 
 		}
@@ -145,27 +154,11 @@ public class GameViewThread extends SurfaceView implements Runnable {
 		if(D) Log.d(TAG, "x = " + event.getX() + " y = " + event.getY());
 		synchronized(holder)
 		{
-			if(y < 150)
+			if(touchDown == false)
 			{
-				if(D) Log.d(TAG, "up");
-				board.setSnakeDirection(Direction.UP);
+				board.isKeyPressed((int)x, (int)y);
+				touchDown = true;
 			}
-			else if(y > 570)
-			{
-				if(D) Log.d(TAG, "down");
-				board.setSnakeDirection(Direction.DOWN);
-			}
-			else if(x < 200)
-			{
-				if(D) Log.d(TAG, "left");
-				board.setSnakeDirection(Direction.LEFT);
-			}
-			else if(x > 996)
-			{
-				if(D) Log.d(TAG, "right");
-				board.setSnakeDirection(Direction.RIGHT);
-			}
-			
 		}		
 	    return true ;
 	}

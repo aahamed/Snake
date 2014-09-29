@@ -11,7 +11,7 @@ import android.util.Log;
 public class Snake {
 	private ArrayList<Position> snakeBody = new ArrayList<Position>();
 	private final int initLength = 3;
-	private int length = initLength;
+	private final int length = initLength;
 	private final String TAG = "Snake";
 	Direction currentDir;
 	
@@ -43,6 +43,18 @@ public class Snake {
 		return snakeBody.get(0);
 	}
 	
+	public void elongate()
+	{
+		int length = snakeBody.size();
+		Position nextTail;
+		Position currTail = snakeBody.get(length-1);
+		Position prevTail = snakeBody.get(length-2);
+		Direction relDir = prevTail.getRelativeDirection(currTail);
+		nextTail = new Position(currTail.getX(), currTail.getY());
+		nextTail.shiftPosition(relDir);
+		snakeBody.add(nextTail);
+	}
+	
 	public Direction getCurrentDirection()
 	{
 		return currentDir;
@@ -68,32 +80,10 @@ public class Snake {
 		}
 	}
 	
-	/* updatePosition:- Updates the position based on the currentSnakeDirection
-	 * @params pos:- A position object
-	 * @return boolean:- false if updatedPosition is outside the game board; true if updatedPosition is inside
-	 * 					 the game board
-	 */
 	public void updateHeadPosition()
 	{
 		Position head = getHead();
-		switch(currentDir)
-		{
-			case DOWN:
-				head.setY(head.getY()+1);
-				
-				break;
-			case LEFT:
-				head.setX(head.getX()-1);
-				break;
-			case RIGHT:
-				head.setX(head.getX()+1);
-				break;
-			case UP:
-				head.setY(head.getY()-1);
-				break;
-			default:
-				throw new Error("cannot determin currentDir");
-		}
+		head.shiftPosition(currentDir);
 	}
 	/*
 	 *  moveSnake:- Moves the snake on the game board
@@ -117,5 +107,28 @@ public class Snake {
 				pos.setY(newPos.getY());
 			}
 		}
+	}
+	
+	public boolean hasEatenItself()
+	{
+		Position head = getHead();
+		for(int i = 1; i < snakeBody.size(); i++)
+		{
+			if(head.equals(snakeBody.get(i)))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void turnClockWise()
+	{
+		setDirection(currentDir.getCWDirection());
+	}
+	
+	public void turnCounterClockWise()
+	{
+		setDirection(currentDir.getCCWDirection());
 	}
 }

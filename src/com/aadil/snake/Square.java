@@ -70,4 +70,14 @@ public class Square {
 		paint.setColor(Color.GREEN);
 		canvas.drawRect(left, top, right, bottom, paint);
 	}
+	
+	//Note the position returned by this method is not a position on the game board but a coordinate on the screen
+	public Position getCenter()
+	{
+		int cx = 0;
+		int cy = 0;
+		cx = left + (right - left) / 2;
+		cy = top  + (bottom - top) / 2;
+		return new Position(cx, cy);
+	}
 }

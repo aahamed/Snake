@@ -26,11 +26,17 @@ public class GameViewThread extends SurfaceView implements Runnable {
 	private final String TAG = "GameViewThread";
 	private boolean D = true;
 	private final int SCREEN_FPS = 60;
-	private final int TARGET_FPS = 4;
+	private final int EASY_FPS = 5;
+	private final int MEDIUM_FPS = 8;
+	private final int HARD_FPS = 12;
+	private int TargetFPS;
 	private boolean touchDown = false;
 	final Handler handler = new Handler();
+	public static final int DIFFICULTY_EASY = 1;
+	public static final int DIFFICULTY_MEDIUM = 2;
+	public static final int DIFFICULTY_HARD = 3;
 
-	public GameViewThread(Context context) {
+	public GameViewThread(Context context, int difficulty) {
 		super(context);
 		// TODO Auto-generated constructor stub
 		holder = getHolder();
@@ -43,6 +49,20 @@ public class GameViewThread extends SurfaceView implements Runnable {
 		screenHeight = size.y;
 		Log.d(TAG, "screen width: " + screenWidth + " screen height: " + screenHeight);
 		board = new GameBoard();
+		switch(difficulty)
+		{
+			case DIFFICULTY_EASY:
+				TargetFPS = EASY_FPS;
+				break;
+			case DIFFICULTY_MEDIUM:
+				TargetFPS = MEDIUM_FPS;
+				break;
+			case DIFFICULTY_HARD:
+				TargetFPS = HARD_FPS;
+				break;
+		}
+		board.setSnakeSpeed(TargetFPS);
+		//TargetFPS = board.getSnakeSpeed();
 		//snake = board.getSnake();
 	}
 	
@@ -57,7 +77,7 @@ public class GameViewThread extends SurfaceView implements Runnable {
 	int count = 0;
 	public void updateCanvas()
 	{
-		if(count % (SCREEN_FPS/TARGET_FPS) == 0)
+		if(count % (SCREEN_FPS/TargetFPS) == 0)
 		{
 //			if(board.moveSnake() == false)
 //			{
@@ -65,6 +85,7 @@ public class GameViewThread extends SurfaceView implements Runnable {
 //				Log.d(TAG, "snake is out of bounds");
 //			}
 			board.update();
+			TargetFPS = board.getSnakeSpeed();
 			touchDown = false;
 			if(board.gameOver())
 			{
@@ -82,9 +103,10 @@ public class GameViewThread extends SurfaceView implements Runnable {
 		count++;
 	}
 	
+
 	public void resume()
 	{
-		if(running == false)
+		if(running == false && !board.gameOver())
 		{
 			running = true;
 			renderThread.start();

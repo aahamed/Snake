@@ -12,6 +12,8 @@ public class Snake {
 	private ArrayList<Position> snakeBody = new ArrayList<Position>();
 	private final int initLength = 3;
 	private final int length = initLength;
+	//private final int EASY = 5;
+	private int speed;
 	private final String TAG = "Snake";
 	Direction currentDir;
 	
@@ -21,6 +23,19 @@ public class Snake {
 		currentDir = Direction.RIGHT;
 	}
 	
+	public int getSpeed()
+	{
+		return speed;
+	}
+	
+	public void incSpeed()
+	{
+		speed++;
+	}
+	public void setSpeed(int _speed)
+	{
+		speed = _speed;
+	}
 	public ArrayList<Position> getSnakeBody() {
 		return snakeBody;
 	}

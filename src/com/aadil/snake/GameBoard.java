@@ -6,6 +6,7 @@ import java.util.Random;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.util.Log;
@@ -19,12 +20,17 @@ public class GameBoard {
 	int boardHeight = geWidth * rows;
 	int leftOffset = 0;
 	int topOffset = 0;
+	int score = 0;
+	private int applesEaten = 0;
+	private long startTime;
+	String stringScore;
 	Square [][] board = new Square[cols][rows]; //(col, row)20, 14 are placeholders for now
 	Snake snake;
 	Direction currSnakeDir;
 	Apple apple;
 	Paint paint = new Paint();
 	private String TAG = "GameBoard";
+	private boolean D = false;
 	
 	public GameBoard()
 	{
@@ -38,6 +44,8 @@ public class GameBoard {
 				board[i][j] = new Square(leftOffset + (geWidth * i), topOffset + (geWidth * j), geWidth);
 			}
 		}
+		startTime = System.currentTimeMillis();
+		stringScore = "Score: " + score;
 	}
 	
 	private Rect getBoundaryRect()
@@ -96,22 +104,22 @@ public class GameBoard {
 	{
 		if(inRect(x, y, leftKey))
 		{
-			Log.d(TAG, "left key is pressed");
+			if(D) Log.d(TAG, "left key is pressed");
 			setSnakeDirection(Direction.LEFT);
 		}
 		else if(inRect(x, y, rightKey))
 		{
-			Log.d(TAG, "right key is pressed");
+			if(D) Log.d(TAG, "right key is pressed");
 			setSnakeDirection(Direction.RIGHT);
 		}
 		else if(inRect(x, y, upKey))
 		{
-			Log.d(TAG, "upKey is pressed");
+			if(D) Log.d(TAG, "upKey is pressed");
 			setSnakeDirection(Direction.UP);
 		}
 		else if(inRect(x, y, downKey))
 		{
-			Log.d(TAG, "downKey is pressed");
+			if(D) Log.d(TAG, "downKey is pressed");
 			setSnakeDirection(Direction.DOWN);
 		}
 	}
@@ -125,6 +133,16 @@ public class GameBoard {
 		drawApple(canvas);
 		drawSnake(canvas);
 		drawKeyPad(canvas);
+		drawScore(canvas);
+	}
+	
+	public void drawScore(Canvas canvas)
+	{
+		float textSize = 30.0f;
+		paint.setColor(Color.WHITE);
+		paint.setTextAlign(Align.CENTER);
+		paint.setTextSize(textSize);
+		canvas.drawText(stringScore, upKey.left + (KEY_WIDTH/2), upKey.top/2, paint);
 	}
 	
 	public void update()
@@ -134,7 +152,39 @@ public class GameBoard {
 		{
 			createNewApple();
 			snake.elongate();
-			
+			applesEaten++;
+			Log.d(TAG, "startTime = " + startTime);
+			float deltaTime = (System.currentTimeMillis() - startTime)/1000;
+			startTime = System.currentTimeMillis();
+			Log.d(TAG, "deltaTime = " + deltaTime);
+			updateScore((int)(deltaTime));
+			stringScore = "Score: " + score;
+			incDifficulty();
+		}
+	}
+	
+	int base = 10;
+	public void updateScore(int deltaTime)
+	{
+		if(D) Log.d(TAG, "updateScore() called");
+		int multiplier = 5;
+		int bonus = 0;
+		if(applesEaten % 5 == 0)
+		{
+			base += 5;
+		}
+		bonus = base - deltaTime;
+		if(bonus < 0)
+			bonus = 0;
+		score += (multiplier + (bonus)) * applesEaten;
+		Log.d(TAG, "multiplier = " + multiplier + " base = " + base + "\napplesEaten = " + applesEaten + " score = " + score);
+	}
+	
+	private void incDifficulty()
+	{
+		if((snake.getLength()-3) % 4 == 0)
+		{
+			snake.incSpeed();
 		}
 	}
 	
@@ -146,6 +196,7 @@ public class GameBoard {
 		for(int i = 0; i < snakeBody.size(); i++)
 		{
 			pos = snakeBody.get(i);
+			//Log.d(TAG, "i = " + i + "posX = " + pos.getX() + " posY = " + pos.getY());
 			square = board[pos.getX()][pos.getY()];
 			Paint paint = new Paint();
 			paint.setStyle(Style.STROKE);
@@ -154,6 +205,15 @@ public class GameBoard {
 		}
 	}
 	
+	public int getSnakeSpeed()
+	{
+		return snake.getSpeed();
+	}
+	
+	public void setSnakeSpeed(int speed)
+	{
+		snake.setSpeed(speed);
+	}
 	public void createNewApple()
 	{
 		boolean valid = false;
@@ -188,7 +248,7 @@ public class GameBoard {
 		Position gridPos = apple.getPositon();
 		Square square = board[gridPos.getX()][gridPos.getY()];
 		Position center = square.getCenter();
-		Log.d(TAG, "apple position = " + gridPos + "\napple center = " + center);
+		if(D) Log.d(TAG, "apple position = " + gridPos + "\napple center = " + center);
 		canvas.drawCircle(center.getX(), center.getY(), apple.getRadius(), paint);
 	}	
 	
